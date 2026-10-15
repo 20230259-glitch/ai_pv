@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="auth-page container">
+  <div class="auth-intro">
+    <span class="eyebrow">BẮT ĐẦU</span>
+    <h1>Tạo tài khoản để bắt đầu luyện phỏng vấn.</h1>
+    <p>Chỉ cần tạo tài khoản. Bạn sẽ thiết lập CV và vị trí ứng tuyển ở bước tiếp theo.</p>
+  </div>
+  <form class="auth-card" method="post">
+    <h2>Đăng ký</h2>
+    {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+    <label>Tên đăng nhập<input name="username" autocomplete="username" required></label>
+    <label>Mật khẩu<input type="password" name="password" autocomplete="new-password" required></label>
+    <label>Xác nhận mật khẩu<input type="password" name="confirm_password" autocomplete="new-password" required></label>
+    <button class="btn wide" type="submit">Tạo tài khoản</button>
+    <p class="auth-bottom">Đã có tài khoản? <a href="{{ url_for('main.login') }}">Đăng nhập</a></p>
+  </form>
+</div>
+{% endblock %}

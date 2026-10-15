@@ -1,0 +1,27 @@
+{% extends 'base.html' %}{% block content %}
+<section class="hero container">
+  <div class="hero-copy">
+    <span class="eyebrow">PERSONALIZED INTERVIEW PRACTICE</span>
+    <h1>Biến mỗi lần luyện phỏng vấn thành một bước tiến gần hơn đến công việc mơ ước.</h1>
+    <p>AI tạo kịch bản dựa trên CV và JD của bạn, phân tích câu trả lời và chỉ ra những kỹ năng cần cải thiện.</p>
+    <div class="hero-actions"><a class="btn" href="{{ url_for('main.signup') }}">Bắt đầu luyện phỏng vấn</a><a class="text-link" href="#how-it-works">Khám phá cách hoạt động</a></div>
+  </div>
+  <div class="interview-preview">
+    <div class="preview-top"><span>Backend Developer</span><span>Question 4 / 10</span></div>
+    <div class="preview-question">Bạn có thể mô tả một hệ thống backend phức tạp mà bạn từng xây dựng không?</div>
+    <div class="preview-answer"><span class="live-line"></span><span>Candidate đang trả lời...</span><strong>00:42</strong></div>
+    <div class="preview-feedback"><div><span>Communication</span><b>82</b></div><div><span>Structure</span><b>76</b></div><div><span>Technical Depth</span><b>88</b></div></div>
+  </div>
+</section>
+<section class="section section-soft"><div class="container">
+  <div class="section-heading"><span class="eyebrow">THỰC TRẠNG</span><h2>Luyện phỏng vấn không khó. Khó là biết mình cần cải thiện điều gì.</h2></div>
+  <div class="editorial-grid"><div><strong>01</strong><h3>Thiếu định vị năng lực</h3><p>Khó xác định lỗ hổng kỹ năng cá nhân khi thiếu một góc nhìn đánh giá chuyên sâu.</p></div><div><strong>02</strong><h3>Nội dung rập khuôn</h3><p>Câu hỏi mẫu thường không bám sát JD và kinh nghiệm thực tế của từng ứng viên.</p></div><div><strong>03</strong><h3>Phản hồi mơ hồ</h3><p>Nhận xét chung chung khiến bạn khó biết mình đã tiến bộ bao nhiêu.</p></div></div>
+</div></section>
+<section id="how-it-works" class="section"><div class="container"><div class="section-heading"><span class="eyebrow">CÁCH HOẠT ĐỘNG</span><h2>Một buổi phỏng vấn được xây dựng riêng cho bạn.</h2></div>
+<div class="flow"><div><b>01</b><span>CV</span><small>Kinh nghiệm, kỹ năng, dự án</small></div><i></i><div><b>02</b><span>JD</span><small>Vị trí, level, tiêu chí</small></div><i></i><div><b>03</b><span>Kịch bản</span><small>Câu hỏi phù hợp hồ sơ</small></div><i></i><div><b>04</b><span>Phân tích</span><small>Trả lời và skill gap</small></div><i></i><div><b>05</b><span>Lộ trình</span><small>Điểm yếu và bước tiếp theo</small></div></div></div></section>
+<section id="technology" class="section section-soft"><div class="container"><div class="section-heading"><span class="eyebrow">DATA-CENTRIC AI</span><h2>Đằng sau một buổi phỏng vấn cá nhân hóa.</h2><p>Dữ liệu được làm sạch và chuẩn hóa trước khi đưa vào AI để tạo ra đánh giá nhất quán hơn.</p></div>
+<div class="pipeline"><div><span>01</span><b>Dữ liệu đầu vào</b><p>CV · JD · Audio / Text · Lịch sử phiên</p></div><div><span>02</span><b>Làm sạch</b><p>Loại dữ liệu lỗi · Lọc nhiễu · Bỏ từ đệm</p></div><div><span>03</span><b>Chuẩn hóa</b><p>Skill · Job level · Score · Candidate profile</p></div><div><span>04</span><b>AI-ready data</b><p>Embedding · Question Generation · Scoring</p></div></div>
+</div></section>
+<section class="section"><div class="container"><div class="section-heading"><span class="eyebrow">4 NHÓM DỮ LIỆU</span><h2>AI hiểu bạn từ nhiều nguồn dữ liệu.</h2></div><div class="data-grid"><div><b>HỒ SƠ ỨNG VIÊN</b><span>CV</span><p>Kinh nghiệm, học vấn, dự án và kỹ năng chuyên môn.</p></div><div><b>MÔ TẢ CÔNG VIỆC</b><span>JD</span><p>Kỹ năng, trách nhiệm và level kinh nghiệm mục tiêu.</p></div><div><b>PHIÊN PHỎNG VẤN</b><span>Interview</span><p>Câu hỏi, câu trả lời, transcript và thời gian phản ứng.</p></div><div><b>LỊCH SỬ</b><span>Progress</span><p>Điểm số, skill matrix và tốc độ cải thiện.</p></div></div></div></section>
+<section class="section section-dark"><div class="container compact-cta"><span class="eyebrow">BẮT ĐẦU TỪ MỘT BUỔI PHỎNG VẤN</span><h2>Simple enough for a job seeker. Powerful enough for an AI platform.</h2><a class="btn btn-light" href="{{ url_for('main.signup') }}">Bắt đầu luyện phỏng vấn</a></div></section>
+{% endblock %}

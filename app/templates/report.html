@@ -1,0 +1,1419 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container app-page report-page">
+
+    {% if result %}
+
+    <!-- ================================================== -->
+    <!-- 1. PAGE HEADER -->
+    <!-- ================================================== -->
+
+    <div class="page-intro">
+
+        <span class="eyebrow">
+            FEEDBACK REPORT
+            {% if latest['position'] %}
+                · {{ latest['position'] }}
+            {% endif %}
+        </span>
+
+        <h1>Đây là kết quả của bạn.</h1>
+
+        <p>
+            Báo cáo tổng hợp kết quả phiên phỏng vấn,
+            các tiêu chí đánh giá và những kỹ năng cần cải thiện.
+        </p>
+
+        <div class="report-meta">
+
+            {% if latest['level'] %}
+            <span class="meta-badge">
+                Cấp độ: {{ latest['level'] }}
+            </span>
+            {% endif %}
+
+            {% if latest['question_source'] %}
+            <span class="meta-badge">
+                Nguồn câu hỏi: {{ latest['question_source'] }}
+            </span>
+            {% endif %}
+
+            <span class="meta-badge">
+                {{ result.question_count }} câu trả lời
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- 2. SCORE OVERVIEW -->
+    <!-- ================================================== -->
+
+    <div class="report-overview">
+
+        <!-- Overall score -->
+
+        <section class="score-summary">
+
+            <span class="muted">
+                Điểm tổng
+            </span>
+
+            <div class="score-number">
+
+                <strong>
+                    {{ result.overall|default(0, true)|float|round(1) }}
+                </strong>
+
+                <span>/100</span>
+
+            </div>
+
+            <p class="score-description">
+
+                {% if result.scored_question_count == 0 %}
+
+                    Chưa có câu trả lời được chấm điểm.
+
+                {% elif result.overall >= 80 %}
+
+                    Kết quả rất tốt. Hãy tiếp tục phát huy.
+
+                {% elif result.overall >= 65 %}
+
+                    Kết quả khá tốt. Bạn có thể cải thiện thêm.
+
+                {% elif result.overall >= 50 %}
+
+                    Bạn nên tiếp tục luyện tập các kỹ năng còn yếu.
+
+                {% else %}
+
+                    Hãy luyện tập thêm để cải thiện kết quả phỏng vấn.
+
+                {% endif %}
+
+            </p>
+
+            <div class="overall-progress">
+
+                <div
+                    class="overall-progress-fill"
+                    style="width: {{ [[result.overall|default(0, true)|float, 0]|max, 100]|min }}%;">
+                </div>
+
+            </div>
+
+            <div class="score-footnote">
+
+                <span>
+                    Đã chấm {{ result.scored_question_count }}
+                    / {{ result.question_count }} câu
+                </span>
+
+                {% if result.matching_score is defined %}
+                <span>
+                    CV – JD: {{ result.matching_score|round(1) }}%
+                </span>
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Criteria scores -->
+
+        <section class="criteria-list">
+
+            <div class="section-heading">
+
+                <div>
+                    <span class="eyebrow">
+                        EVALUATION
+                    </span>
+
+                    <h2>Tiêu chí đánh giá</h2>
+                </div>
+
+                <span class="muted">
+                    Thang điểm 100
+                </span>
+
+            </div>
+
+
+            {% for name, value in result.criteria.items() %}
+
+                {% set score = value|default(0, true)|float %}
+
+                {% set safe_score = [[score, 0]|max, 100]|min %}
+
+                <div class="report-row">
+
+                    <div class="report-row-heading">
+
+                        <span>
+                            {{ name }}
+                        </span>
+
+                        <strong>
+                            {{ score|round(1) }}
+                        </strong>
+
+                    </div>
+
+                    <div
+                        class="bar"
+                        role="progressbar"
+                        aria-label="{{ name }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="{{ safe_score }}">
+
+                        <i
+                            style="width: {{ safe_score }}%;">
+                        </i>
+
+                    </div>
+
+                    <div class="criteria-feedback">
+
+                        {% if score >= 80 %}
+
+                            <span class="status status-good">
+                                Rất tốt
+                            </span>
+
+                        {% elif score >= 65 %}
+
+                            <span class="status status-good">
+                                Khá tốt
+                            </span>
+
+                        {% elif score >= 50 %}
+
+                            <span class="status status-medium">
+                                Cần cải thiện
+                            </span>
+
+                        {% else %}
+
+                            <span class="status status-low">
+                                Cần luyện tập thêm
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </section>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- 3. STRENGTHS AND IMPROVEMENTS -->
+    <!-- ================================================== -->
+
+    <div class="report-grid-3">
+
+        <!-- Strengths -->
+
+        <section class="insight-card">
+
+            <span class="eyebrow">
+                YOUR STRENGTHS
+            </span>
+
+            <h3>Điểm mạnh</h3>
+
+            {% if result.strengths %}
+
+                <ul class="insight-list">
+
+                    {% for item in result.strengths %}
+
+                        <li>
+                            <span class="insight-icon">+</span>
+
+                            <span>{{ item }}</span>
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <p>
+                    Chưa có tiêu chí nào đạt ngưỡng xác định điểm mạnh.
+                    Bạn hãy tiếp tục luyện tập và bổ sung ví dụ cụ thể
+                    trong câu trả lời.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- Improvements -->
+
+        <section class="insight-card">
+
+            <span class="eyebrow">
+                AREAS TO IMPROVE
+            </span>
+
+            <h3>Điểm cần cải thiện</h3>
+
+            {% if result.improvements %}
+
+                <ul class="insight-list">
+
+                    {% for item in result.improvements %}
+
+                        <li>
+                            <span class="insight-icon">!</span>
+
+                            <span>{{ item }}</span>
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <p>
+                    Không có tiêu chí nào nằm dưới ngưỡng cải thiện
+                    theo quy tắc đánh giá hiện tại.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- Next step -->
+
+        <section class="insight-card next-step-card">
+
+            <span class="eyebrow">
+                NEXT STEP
+            </span>
+
+            <h3>Luyện tập tiếp</h3>
+
+            <p>
+                Tiếp tục luyện phỏng vấn để củng cố kiến thức,
+                cải thiện cách trình bày và nâng cao độ phù hợp
+                với vị trí ứng tuyển.
+            </p>
+
+            <a
+                class="btn"
+                href="{{ url_for('main.profile') }}">
+
+                Bắt đầu phiên mới
+
+            </a>
+
+        </section>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- 4. QUESTION-BY-QUESTION RESULTS -->
+    <!-- ================================================== -->
+
+    <section class="content-section report-detail-section">
+
+        <div class="section-line">
+
+            <div>
+
+                <span class="eyebrow">
+                    QUESTION REVIEW
+                </span>
+
+                <h2>Chi tiết câu trả lời</h2>
+
+            </div>
+
+            <span class="muted">
+
+                {{ result.question_count }} câu trả lời
+
+            </span>
+
+        </div>
+
+
+        {% if rows %}
+
+            <div class="table-wrap">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Câu hỏi phỏng vấn</th>
+
+                            <th>Tiêu chí</th>
+
+                            <th>Điểm</th>
+
+                            <th>Trạng thái</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in rows %}
+
+                            <tr>
+
+                                <td>
+                                    {{ loop.index }}
+                                </td>
+
+                                <td class="question-cell">
+
+                                    {{ row['question'] or 'Chưa có nội dung câu hỏi' }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ row['criterion'] or 'Chưa phân loại' }}
+
+                                </td>
+
+                                <td>
+
+                                    {% if row['score'] is not none %}
+
+                                        <strong class="table-score">
+
+                                            {{ row['score']|float|round(1) }}/100
+
+                                        </strong>
+
+                                    {% else %}
+
+                                        <span class="muted">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% if row['score'] is not none %}
+
+                                        <span class="status status-good">
+                                            Đã chấm
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status status-medium">
+                                            Chưa chấm
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <p>
+                    Chưa có dữ liệu câu trả lời.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ================================================== -->
+    <!-- 5. ANSWER DETAILS -->
+    <!-- ================================================== -->
+
+    <section class="content-section answer-review-section">
+
+        <div class="section-line">
+
+            <div>
+
+                <span class="eyebrow">
+                    ANSWER DETAILS
+                </span>
+
+                <h2>Xem lại câu trả lời</h2>
+
+            </div>
+
+            <span class="muted">
+                {{ rows|length }} câu
+            </span>
+
+        </div>
+
+
+        {% if rows %}
+
+            <div class="answer-review-list">
+
+                {% for row in rows %}
+
+                    <details class="answer-card">
+
+                        <summary class="answer-card-summary">
+
+                            <div class="answer-card-title">
+
+                                <span class="question-number">
+                                    {{ "%02d"|format(loop.index) }}
+                                </span>
+
+                                <span>
+                                    {{ row['question'] or 'Câu hỏi phỏng vấn' }}
+                                </span>
+
+                            </div>
+
+                            <div class="answer-card-score">
+
+                                {% if row['score'] is not none %}
+
+                                    <strong>
+                                        {{ row['score']|float|round(1) }}/100
+                                    </strong>
+
+                                {% else %}
+
+                                    <span class="muted">
+                                        Chưa chấm
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </summary>
+
+
+                        <div class="answer-card-body">
+
+                            <div class="answer-block">
+
+                                <h4>Câu trả lời</h4>
+
+                                {% if row['answer'] %}
+
+                                    <p class="answer-text">
+                                        {{ row['answer'] }}
+                                    </p>
+
+                                {% else %}
+
+                                    <p class="muted">
+                                        Chưa có nội dung câu trả lời.
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if row['cleaned'] %}
+
+                                <div class="answer-block">
+
+                                    <h4>Transcript đã xử lý</h4>
+
+                                    <p class="answer-text">
+                                        {{ row['cleaned'] }}
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if row['criteria'] %}
+
+                                <div class="answer-block">
+
+                                    <h4>Điểm theo tiêu chí</h4>
+
+                                    <div class="answer-criteria-grid">
+
+                                        {% for name, value in row['criteria'].items() %}
+
+                                            <div class="answer-criteria-item">
+
+                                                <span>{{ name }}</span>
+
+                                                <strong>
+                                                    {{ value|float|round(1) }}
+                                                </strong>
+
+                                            </div>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </details>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ================================================== -->
+    <!-- 6. FINAL TRANSCRIPT -->
+    <!-- ================================================== -->
+
+    <section class="content-section transcript-section">
+
+        <div class="section-line">
+
+            <div>
+
+                <span class="eyebrow">
+                    TRANSCRIPT SUMMARY
+                </span>
+
+                <h2>Transcript cuối phiên</h2>
+
+            </div>
+
+            <span class="muted">
+                {{ result.word_count }} từ
+            </span>
+
+        </div>
+
+
+        <div class="transcript-box">
+
+            <div class="transcript-heading">
+                <h3>Câu trả lời gần nhất</h3>
+            </div>
+
+            {% if latest['answer'] %}
+
+                <div class="transcript-content">
+
+                    <h4>Nội dung gốc</h4>
+
+                    <p>
+                        {{ latest['answer'] }}
+                    </p>
+
+                </div>
+
+            {% else %}
+
+                <p class="muted">
+                    Chưa có nội dung câu trả lời gốc.
+                </p>
+
+            {% endif %}
+
+
+            {% if result.cleaned %}
+
+                <div class="transcript-content">
+
+                    <h4>Transcript đã xử lý</h4>
+
+                    <p>
+                        {{ result.cleaned }}
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="transcript-footer">
+
+                <span>
+                    Số từ: {{ result.word_count }}
+                </span>
+
+                {% if latest['question_order'] is not none %}
+
+                    <span>
+                        Câu hỏi số {{ latest['question_order'] }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================== -->
+    <!-- 7. BOTTOM ACTIONS -->
+    <!-- ================================================== -->
+
+    <div class="report-bottom-actions">
+
+        <a
+            class="btn"
+            href="{{ url_for('main.profile') }}">
+
+            Luyện phỏng vấn lại
+
+        </a>
+
+        <a
+            class="secondary-btn"
+            href="{{ url_for('main.dashboard') }}">
+
+            Quay lại trang chủ
+
+        </a>
+
+    </div>
+
+
+    {% else %}
+
+    <!-- ================================================== -->
+    <!-- EMPTY REPORT -->
+    <!-- ================================================== -->
+
+    <div class="empty-report">
+
+        <div class="empty-report-icon">
+            ?
+        </div>
+
+        <span class="eyebrow">
+            FEEDBACK REPORT
+        </span>
+
+        <h1>Chưa có báo cáo phỏng vấn.</h1>
+
+        <p>
+            Hãy hoàn thành một phiên phỏng vấn để hệ thống
+            tổng hợp điểm số và đánh giá các kỹ năng của bạn.
+        </p>
+
+        <a
+            class="btn"
+            href="{{ url_for('main.profile') }}">
+
+            Bắt đầu luyện phỏng vấn
+
+        </a>
+
+        <a
+            class="secondary-btn"
+            href="{{ url_for('main.dashboard') }}">
+
+            Quay lại trang chủ
+
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ====================================================== -->
+<!-- REPORT PAGE STYLES -->
+<!-- ====================================================== -->
+
+<style>
+
+.report-page {
+    padding-top: 36px;
+    padding-bottom: 64px;
+}
+
+.report-page h1 {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    font-size: clamp(28px, 4vw, 38px);
+    line-height: 1.2;
+    letter-spacing: -1px;
+}
+
+.report-page h2 {
+    margin: 6px 0 0;
+    font-size: 21px;
+    line-height: 1.4;
+}
+
+.report-page h3 {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+.report-page p {
+    line-height: 1.75;
+}
+
+.report-page .page-intro {
+    margin-bottom: 32px;
+}
+
+.report-page .page-intro > p {
+    max-width: 700px;
+    color: var(--muted, #667085);
+}
+
+.report-page .report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.report-page .meta-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    color: #475467;
+    background: #ffffff;
+    font-size: 12px;
+}
+
+
+/* Score overview */
+
+.report-page .report-overview {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.5fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.report-page .score-summary,
+.report-page .criteria-list {
+    min-width: 0;
+    padding: 28px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.report-page .score-summary {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.report-page .score-number {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-top: 18px;
+}
+
+.report-page .score-number strong {
+    font-size: clamp(54px, 7vw, 76px);
+    font-weight: 750;
+    line-height: 1;
+    letter-spacing: -3px;
+}
+
+.report-page .score-number > span {
+    color: #667085;
+    font-size: 18px;
+}
+
+.report-page .score-description {
+    min-height: 48px;
+    margin-top: 18px;
+    margin-bottom: 20px;
+    color: #667085;
+    font-size: 13px;
+}
+
+.report-page .overall-progress {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #edf0f5;
+}
+
+.report-page .overall-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: #4d67e8;
+    transition: width 0.3s ease;
+}
+
+.report-page .score-footnote {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 14px;
+    color: #667085;
+    font-size: 11px;
+}
+
+
+/* Criteria */
+
+.report-page .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 26px;
+}
+
+.report-page .section-heading .muted {
+    font-size: 12px;
+}
+
+.report-page .report-row {
+    margin-bottom: 23px;
+}
+
+.report-page .report-row:last-child {
+    margin-bottom: 0;
+}
+
+.report-page .report-row-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.report-page .report-row-heading > span {
+    overflow-wrap: anywhere;
+}
+
+.report-page .report-row-heading > strong {
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.report-page .bar {
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #edf0f5;
+}
+
+.report-page .bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #4d67e8;
+}
+
+.report-page .criteria-feedback {
+    margin-top: 7px;
+}
+
+.report-page .status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.report-page .status-good {
+    color: #067647;
+    background: #ecfdf3;
+}
+
+.report-page .status-medium {
+    color: #b54708;
+    background: #fffaeb;
+}
+
+.report-page .status-low {
+    color: #b42318;
+    background: #fef3f2;
+}
+
+
+/* Insights */
+
+.report-page .report-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.report-page .insight-card {
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.report-page .insight-card > p {
+    color: #667085;
+    font-size: 13px;
+}
+
+.report-page .insight-list {
+    display: grid;
+    gap: 12px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.report-page .insight-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.report-page .insight-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: #344054;
+    background: #f2f4f7;
+    font-weight: 700;
+}
+
+.report-page .next-step-card {
+    background: #f8f9ff;
+}
+
+.report-page .next-step-card .btn {
+    display: inline-flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+
+/* Sections */
+
+.report-page .content-section {
+    margin-top: 44px;
+}
+
+.report-page .section-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.report-page .section-line > .muted {
+    font-size: 12px;
+}
+
+
+/* Table */
+
+.report-page .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.report-page .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.report-page .report-table th,
+.report-page .report-table td {
+    padding: 15px 16px;
+    border-bottom: 1px solid #eaecf0;
+    font-size: 13px;
+    vertical-align: top;
+}
+
+.report-page .report-table th {
+    color: #475467;
+    background: #f9fafb;
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.report-page .report-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.report-page .report-table tbody tr:hover {
+    background: #fafbff;
+}
+
+.report-page .question-cell {
+    min-width: 260px;
+    max-width: 560px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.report-page .table-score {
+    white-space: nowrap;
+}
+
+
+/* Answer review */
+
+.report-page .answer-review-list {
+    display: grid;
+    gap: 12px;
+}
+
+.report-page .answer-card {
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.report-page .answer-card-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    padding: 18px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.report-page .answer-card-summary::-webkit-details-marker {
+    display: none;
+}
+
+.report-page .answer-card-summary::after {
+    content: "+";
+    flex-shrink: 0;
+    color: #667085;
+    font-size: 22px;
+}
+
+.report-page .answer-card[open] .answer-card-summary::after {
+    content: "−";
+}
+
+.report-page .answer-card-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.7;
+}
+
+.report-page .question-number {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    color: #344054;
+    background: #f2f4f7;
+    font-size: 12px;
+}
+
+.report-page .answer-card-score {
+    flex-shrink: 0;
+    color: #344054;
+    font-size: 13px;
+}
+
+.report-page .answer-card-body {
+    padding: 22px;
+    border-top: 1px solid #eaecf0;
+    background: #fcfcfd;
+}
+
+.report-page .answer-block {
+    margin-bottom: 24px;
+}
+
+.report-page .answer-block:last-child {
+    margin-bottom: 0;
+}
+
+.report-page .answer-block h4,
+.report-page .transcript-content h4 {
+    margin: 0 0 10px;
+    color: #344054;
+    font-size: 13px;
+}
+
+.report-page .answer-text,
+.report-page .transcript-content p {
+    margin: 0;
+    color: #475467;
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.report-page .answer-criteria-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.report-page .answer-criteria-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px;
+    border: 1px solid #eaecf0;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+}
+
+.report-page .answer-criteria-item span {
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.report-page .answer-criteria-item strong {
+    flex-shrink: 0;
+}
+
+
+/* Transcript */
+
+.report-page .transcript-box {
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.report-page .transcript-heading {
+    margin-bottom: 20px;
+}
+
+.report-page .transcript-heading h3 {
+    margin: 0;
+}
+
+.report-page .transcript-content {
+    margin-top: 20px;
+}
+
+.report-page .transcript-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid #eaecf0;
+    color: #667085;
+    font-size: 12px;
+}
+
+
+/* Bottom actions */
+
+.report-page .report-bottom-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.report-page .report-bottom-actions a,
+.report-page .secondary-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 42px;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.report-page .secondary-btn {
+    border: 1px solid #d0d5dd;
+    color: #344054;
+    background: #ffffff;
+}
+
+
+/* Empty report */
+
+.report-page .empty-report {
+    max-width: 580px;
+    margin: 80px auto;
+    padding: 40px 28px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #ffffff;
+    text-align: center;
+}
+
+.report-page .empty-report-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    color: #344054;
+    background: #f2f4f7;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.report-page .empty-report p {
+    margin: 16px auto 24px;
+    color: #667085;
+    font-size: 14px;
+}
+
+.report-page .empty-report .btn,
+.report-page .empty-report .secondary-btn {
+    margin: 5px;
+}
+
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+    .report-page .report-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .report-page .report-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .report-page {
+        padding-top: 24px;
+    }
+
+    .report-page .score-summary,
+    .report-page .criteria-list,
+    .report-page .insight-card {
+        padding: 20px;
+    }
+
+    .report-page .answer-criteria-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-page .answer-card-summary {
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .report-page .answer-card-body {
+        padding: 16px;
+    }
+
+    .report-page .report-bottom-actions {
+        flex-direction: column;
+    }
+
+    .report-page .report-bottom-actions a {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .report-page .score-footnote {
+        flex-direction: column;
+    }
+
+}
+
+</style>
+
+{% endblock %}

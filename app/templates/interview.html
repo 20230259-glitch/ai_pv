@@ -1,0 +1,449 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container interview-page">
+
+    <div class="interview-top">
+
+        <div>
+            <span class="eyebrow">
+                {{ job.position }} · {{ job.level }}
+            </span>
+
+            <h1>Interview session</h1>
+        </div>
+
+        <div class="session-meta">
+            <span id="record-state">
+                Sẵn sàng
+            </span>
+
+            <span id="timer">
+                00:00
+            </span>
+        </div>
+
+    </div>
+
+
+    <div class="progress-track">
+        <i id="session-progress" style="width:10%"></i>
+    </div>
+
+
+    <div class="interview-layout">
+
+        <!-- ================================= -->
+        <!-- QUESTION AREA -->
+        <!-- ================================= -->
+
+        <section class="question-area">
+
+            <div class="question-count">
+                QUESTION
+                <b id="q-index">01</b>
+                /
+                {{ job.questions|length }}
+            </div>
+
+
+            <h2 id="question">
+                {{ job.questions[0] }}
+            </h2>
+
+
+            <p class="question-help">
+                Hãy trả lời tự nhiên.
+                Bạn có thể nói thành tiếng hoặc nhập trực tiếp.
+                Hệ thống sẽ giữ transcript ngay cả khi bạn ngắt câu.
+            </p>
+
+
+            <div class="answer-editor">
+
+                <div class="editor-head">
+                    <span>Transcript</span>
+
+                    <span id="speech-state">
+                        Chưa ghi âm
+                    </span>
+                </div>
+
+
+                <textarea
+                    id="transcript"
+                    placeholder="Câu trả lời sẽ xuất hiện ở đây..."
+                ></textarea>
+
+
+                <div class="record-controls">
+
+                    <button
+                        class="record-btn"
+                        id="record"
+                        type="button"
+                    >
+                        <span></span>
+                        Bắt đầu trả lời
+                    </button>
+
+
+                    <button
+                        class="btn"
+                        id="analyze"
+                        type="button"
+                    >
+                        Phân tích câu trả lời
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="result"
+                class="result-panel hidden"
+            >
+
+                <div class="result-top">
+
+                    <div>
+
+                        <span class="eyebrow">
+                            KẾT QUẢ CÂU TRẢ LỜI
+                        </span>
+
+                        <h3>
+                            Phân tích hoàn tất
+                        </h3>
+
+                    </div>
+
+
+                    <div>
+
+                        <strong id="score">
+                            0
+                        </strong>
+
+                        <span>
+                            /100
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div id="criteria-result"></div>
+
+                <div
+                    id="feedback"
+                    class="feedback-box"
+                ></div>
+
+
+                <button
+                    class="btn"
+                    id="next"
+                    type="button"
+                >
+                    Câu hỏi tiếp theo
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================= -->
+        <!-- RIGHT CONTEXT -->
+        <!-- ================================= -->
+
+        <aside class="interview-context">
+
+            <!-- INTERVIEW CONTEXT -->
+
+            <div>
+
+                <span class="eyebrow">
+                    INTERVIEW CONTEXT
+                </span>
+
+                <h3>
+                    {{ job.position }}
+                </h3>
+
+                <dl>
+
+                    <dt>
+                        Target level
+                    </dt>
+
+                    <dd>
+                        {{ job.level }}
+                    </dd>
+
+
+                    <dt>
+                        Focus
+                    </dt>
+
+                    <dd>
+                        {{ job.hard[:3]|join(' · ') }}
+                    </dd>
+
+                </dl>
+
+            </div>
+
+
+            <!-- ================================= -->
+            <!-- CV ↔ JD MATCHING -->
+            <!-- ================================= -->
+
+            <div class="criteria-mini">
+
+                <span class="eyebrow">
+                    CV ↔ JD MATCHING
+                </span>
+
+
+                <div style="
+                    margin: 14px 0;
+                    padding: 18px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 14px;
+                    background: #f8fafc;
+                ">
+
+                    <div style="
+                        font-size: 13px;
+                        color: #64748b;
+                        margin-bottom: 5px;
+                    ">
+                        Matching Score
+                    </div>
+
+
+                    <div style="
+                        font-size: 32px;
+                        font-weight: 700;
+                    ">
+                        {{ job.matching_score }}%
+                    </div>
+
+                </div>
+
+
+                <!-- MATCHED SKILLS -->
+
+                <div style="
+                    margin-top: 18px;
+                ">
+
+                    <div style="
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                    ">
+                        Matched Skills
+                    </div>
+
+
+                    {% if job.matched_skills %}
+
+                        <div style="
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 7px;
+                        ">
+
+                            {% for skill in job.matched_skills %}
+
+                                <span style="
+                                    padding: 6px 10px;
+                                    border-radius: 999px;
+                                    background: #ecfdf5;
+                                    color: #047857;
+                                    font-size: 13px;
+                                ">
+                                    ✓ {{ skill }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% else %}
+
+                        <p class="muted">
+                            Chưa tìm thấy skill trùng khớp.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- SKILL GAPS -->
+
+                <div style="
+                    margin-top: 18px;
+                ">
+
+                    <div style="
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                    ">
+                        Skill Gaps
+                    </div>
+
+
+                    {% if job.skill_gaps %}
+
+                        <div style="
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 7px;
+                        ">
+
+                            {% for skill in job.skill_gaps %}
+
+                                <span style="
+                                    padding: 6px 10px;
+                                    border-radius: 999px;
+                                    background: #fff7ed;
+                                    color: #c2410c;
+                                    font-size: 13px;
+                                ">
+                                    • {{ skill }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% else %}
+
+                        <p class="muted">
+                            Không phát hiện skill gap rõ ràng.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- CV SKILLS -->
+
+                <div style="
+                    margin-top: 18px;
+                ">
+
+                    <div style="
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                    ">
+                        CV Skills
+                    </div>
+
+
+                    <p>
+                        {{ job.candidate_skills|join(' · ')
+                           or
+                           'Chưa nhận diện được skill từ CV' }}
+                    </p>
+
+                </div>
+
+
+                <!-- JD SKILLS -->
+
+                <div style="
+                    margin-top: 14px;
+                ">
+
+                    <div style="
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                    ">
+                        JD Skills
+                    </div>
+
+
+                    <p>
+                        {{ job.jd_skills|join(' · ')
+                           or
+                           'Chưa nhận diện được skill từ JD' }}
+                    </p>
+
+                </div>
+
+
+                <p style="
+                    margin-top: 16px;
+                ">
+                    <b>Skill cần kiểm chứng:</b>
+                    {{ job.skill_gaps|join(' · ')
+                       or
+                       'Không phát hiện gap rõ ràng' }}
+                </p>
+
+
+                <p>
+                    <b>Nguyên tắc:</b>
+                    Câu hỏi và đánh giá bám theo CV + JD của phiên này.
+                </p>
+
+
+                <!-- ================================= -->
+                <!-- EVALUATION CRITERIA -->
+                <!-- ================================= -->
+
+                <span class="eyebrow">
+                    EVALUATION CRITERIA
+                </span>
+
+
+                {% for name, weight in job.criteria %}
+
+                    <div>
+
+                        <span>
+                            {{ name }}
+                        </span>
+
+                        <b>
+                            {{ weight }}%
+                        </b>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="privacy-note">
+
+                AI phân tích transcript sau khi bạn trả lời.
+                Bạn có thể kiểm tra phần cleaned text trong báo cáo.
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<script>
+    window.INTERVIEW = {{ job | tojson }};
+</script>
+
+<script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+
+{% endblock %}

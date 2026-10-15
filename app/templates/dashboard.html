@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container app-page">
+
+    <!-- WELCOME -->
+    <div class="welcome">
+
+        <div>
+            <span class="eyebrow">CANDIDATE HOME</span>
+
+            <h1>
+                Chào bạn, {{ session.get('username', 'bạn') }}.
+            </h1>
+
+            <p>Bạn muốn làm gì hôm nay?</p>
+        </div>
+
+        <a class="btn" href="{{ url_for('main.profile') }}">
+            Luyện phỏng vấn
+        </a>
+
+    </div>
+
+
+    <!-- QUICK ACTIONS -->
+    <div class="action-grid">
+
+        <a href="{{ url_for('main.profile') }}">
+
+            <span>01</span>
+
+            <strong>Luyện phỏng vấn</strong>
+
+            <small>
+                Tạo phiên mới theo CV và JD.
+            </small>
+
+        </a>
+
+
+        <a href="{{ url_for('main.progress') }}">
+
+            <span>02</span>
+
+            <strong>Xem tiến bộ</strong>
+
+            <small>
+                Theo dõi điểm và skill growth.
+            </small>
+
+        </a>
+
+    </div>
+
+
+    <!-- LATEST INTERVIEW -->
+    <section class="content-section">
+
+        <div class="section-line">
+
+            <h2>Tiếp tục hành trình của bạn</h2>
+
+            <a href="{{ url_for('main.progress') }}">
+                Xem lịch sử
+            </a>
+
+        </div>
+
+
+        {% if attempts %}
+
+            {% set latest = attempts[0] %}
+
+            {% set latest_score = latest['score']|default(0, true)|float %}
+
+            <div class="latest-row">
+
+                <div>
+
+                    <span class="muted">
+                        Phiên gần nhất
+                    </span>
+
+                    <h3>
+                        {{ latest.get('position', 'Chưa xác định') if latest is mapping else 'Chưa xác định' }}
+                    </h3>
+
+                    <p>
+                        {% if latest['answer_count'] %}
+                            Đã trả lời {{ latest['answer_count'] }} câu hỏi
+                        {% else %}
+                            Chưa có câu trả lời
+                        {% endif %}
+                    </p>
+
+                </div>
+
+
+                <div class="latest-score">
+
+                    <b>
+                        {{ (latest_score|default(0, true)|float)|round(0)|int }}
+                    </b>
+
+                    <span>/100</span>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <h3>
+                    Bạn chưa có phiên phỏng vấn nào.
+                </h3>
+
+                <p>
+                    Thực hiện một buổi phỏng vấn thử để biết mình đang ở đâu.
+                </p>
+
+                <a class="btn" href="{{ url_for('main.profile') }}">
+                    Bắt đầu
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- SKILL SUMMARY -->
+    <section class="content-section">
+
+        <div class="section-line">
+
+            <h2>Kỹ năng của bạn</h2>
+
+            <span class="muted">
+                Theo các phiên gần đây
+            </span>
+
+        </div>
+
+
+        <div class="skill-list">
+
+            {% if skill_preview %}
+
+                {% for s, v in skill_preview %}
+
+                    {% set score_value = v|default(0, true)|float %}
+
+                    {% set safe_score = [0, [score_value, 100]|min]|max %}
+
+
+                    <div>
+
+                        <div>
+
+                            <span>{{ s }}</span>
+
+                            <b>
+                                {{ safe_score|round(1) }}
+                            </b>
+
+                        </div>
+
+
+                        <div class="bar">
+
+                            <i style="width: {{ safe_score }}%;"></i>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <h3>Chưa có dữ liệu kỹ năng</h3>
+
+                    <p>
+                        Hãy hoàn thành một phiên phỏng vấn để theo dõi kết quả của bạn.
+                    </p>
+
+                    <a class="btn" href="{{ url_for('main.profile') }}">
+                        Bắt đầu luyện tập
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

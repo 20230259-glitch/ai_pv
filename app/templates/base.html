@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ title or 'InterviewLab' }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="{{ url_for('main.index') }}"><span class="brand-mark">I</span><span>InterviewLab</span></a>
+    {% if session.get('user_id') %}
+      <nav class="main-nav">
+        {% if session.get('role') == 'guest' %}
+          <a href="{{ url_for('main.dashboard') }}">Trang chủ</a>
+          <a href="{{ url_for('main.profile') }}">Hồ sơ</a>
+          <a href="{{ url_for('main.interview') }}">Luyện phỏng vấn</a>
+          <a href="{{ url_for('main.progress') }}">Tiến bộ</a>
+        {% else %}
+          <a href="{{ url_for('main.admin') }}">Overview</a>
+          <a href="{{ url_for('main.admin') }}#candidates">Candidates</a>
+          <a href="{{ url_for('main.admin') }}#evaluation">Evaluation</a>
+        {% endif %}
+      </nav>
+      <div class="header-user"><span>{{ session.get('username') }}</span><a href="{{ url_for('main.logout') }}">Đăng xuất</a></div>
+    {% else %}
+      <nav class="main-nav"><a href="#how-it-works">Cách hoạt động</a><a href="#technology">Công nghệ</a></nav>
+      <div class="header-actions"><a href="{{ url_for('main.login') }}">Đăng nhập</a><a class="btn btn-sm" href="{{ url_for('main.signup') }}">Đăng ký</a></div>
+    {% endif %}
+  </div>
+</header>
+<main>{% block content %}{% endblock %}</main>
+<footer class="site-footer"><div class="container footer-inner"><span>InterviewLab</span><span>Nền tảng luyện phỏng vấn cá nhân hóa</span></div></footer>
+</body>
+</html>
