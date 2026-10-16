@@ -23,5 +23,10 @@
 <div class="pipeline"><div><span>01</span><b>Dữ liệu đầu vào</b><p>CV · JD · Audio / Text · Lịch sử phiên</p></div><div><span>02</span><b>Làm sạch</b><p>Loại dữ liệu lỗi · Lọc nhiễu · Bỏ từ đệm</p></div><div><span>03</span><b>Chuẩn hóa</b><p>Skill · Job level · Score · Candidate profile</p></div><div><span>04</span><b>AI-ready data</b><p>Embedding · Question Generation · Scoring</p></div></div>
 </div></section>
 <section class="section"><div class="container"><div class="section-heading"><span class="eyebrow">4 NHÓM DỮ LIỆU</span><h2>AI hiểu bạn từ nhiều nguồn dữ liệu.</h2></div><div class="data-grid"><div><b>HỒ SƠ ỨNG VIÊN</b><span>CV</span><p>Kinh nghiệm, học vấn, dự án và kỹ năng chuyên môn.</p></div><div><b>MÔ TẢ CÔNG VIỆC</b><span>JD</span><p>Kỹ năng, trách nhiệm và level kinh nghiệm mục tiêu.</p></div><div><b>PHIÊN PHỎNG VẤN</b><span>Interview</span><p>Câu hỏi, câu trả lời, transcript và thời gian phản ứng.</p></div><div><b>LỊCH SỬ</b><span>Progress</span><p>Điểm số, skill matrix và tốc độ cải thiện.</p></div></div></div></section>
-<section class="section section-dark"><div class="container compact-cta"><span class="eyebrow">BẮT ĐẦU TỪ MỘT BUỔI PHỎNG VẤN</span><h2>Simple enough for a job seeker. Powerful enough for an AI platform.</h2><a class="btn btn-light" href="{{ url_for('main.signup') }}">Bắt đầu luyện phỏng vấn</a></div></section>
+<section class="section section-dark"><div class="container compact-cta"><span class="eyebrow">BẮT ĐẦU TỪ MỘT BUỔI PHỎNG VẤN</span><h2>Simple enough for a job seeker. Powerful enough for an AI platform.</h2>
+  <a class="btn"
+    href="{{ url_for('main.profile') if session.get('user_id') else url_for('main.signup') }}">
+    Bắt đầu luyện phỏng vấn
+  </a>
+</div></section>
 {% endblock %}
