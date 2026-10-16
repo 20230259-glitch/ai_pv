@@ -15,16 +15,16 @@
     {% if session.get('user_id') %}
       <nav class="main-nav">
         {% if session.get('role') == 'guest' %}
-          <a href="{{ url_for('main.dashboard') }}">Trang chủ</a>
-          <a href="{{ url_for('main.profile') }}">Hồ sơ</a>
-          <a href="{{ url_for('main.interview') }}">Luyện phỏng vấn</a>
-          <a href="{{ url_for('main.progress') }}">Tiến bộ</a>
+            <a href="{{ url_for('main.dashboard') }}">Trang chủ</a>
+            <a href="{{ url_for('main.profile') }}">Hồ sơ</a>
+            <a href="{{ url_for('main.interview_setup') }}">Luyện phỏng vấn</a>
+            <a href="{{ url_for('main.progress') }}">Tiến bộ</a>
         {% else %}
-          <a href="{{ url_for('main.admin') }}">Overview</a>
-          <a href="{{ url_for('main.admin') }}#candidates">Candidates</a>
-          <a href="{{ url_for('main.admin') }}#evaluation">Evaluation</a>
+            <a href="{{ url_for('main.admin') }}">Overview</a>
+            <a href="{{ url_for('main.admin') }}#candidates">Candidates</a>
+            <a href="{{ url_for('main.admin') }}#evaluation">Evaluation</a>
         {% endif %}
-      </nav>
+    </nav>
       <div class="header-user"><span>{{ session.get('username') }}</span><a href="{{ url_for('main.logout') }}">Đăng xuất</a></div>
     {% else %}
       <nav class="main-nav"><a href="#how-it-works">Cách hoạt động</a><a href="#technology">Công nghệ</a></nav>

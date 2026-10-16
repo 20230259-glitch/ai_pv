@@ -1,19 +1,335 @@
+
 {% extends 'base.html' %}
+
 {% block content %}
 <div class="auth-page container">
-  <div class="auth-intro">
-    <span class="eyebrow">BẮT ĐẦU</span>
-    <h1>Tạo tài khoản để bắt đầu luyện phỏng vấn.</h1>
-    <p>Chỉ cần tạo tài khoản. Bạn sẽ thiết lập CV và vị trí ứng tuyển ở bước tiếp theo.</p>
-  </div>
-  <form class="auth-card" method="post">
-    <h2>Đăng ký</h2>
-    {% if error %}<div class="alert">{{ error }}</div>{% endif %}
-    <label>Tên đăng nhập<input name="username" autocomplete="username" required></label>
-    <label>Mật khẩu<input type="password" name="password" autocomplete="new-password" required></label>
-    <label>Xác nhận mật khẩu<input type="password" name="confirm_password" autocomplete="new-password" required></label>
-    <button class="btn wide" type="submit">Tạo tài khoản</button>
-    <p class="auth-bottom">Đã có tài khoản? <a href="{{ url_for('main.login') }}">Đăng nhập</a></p>
-  </form>
+    <div class="auth-intro">
+        <span class="eyebrow">BẮT ĐẦU</span>
+        <h1>Tạo tài khoản để bắt đầu luyện phỏng vấn.</h1>
+        <p>Chỉ cần tạo tài khoản. Bạn sẽ thiết lập CV và vị trí ứng tuyển ở bước tiếp theo.</p>
+    </div>
+
+    <form class="auth-card signup-compact" method="post" id="signupForm">
+        <h2>Đăng ký</h2>
+
+        {% if error %}
+            <div class="signup-message error-message" role="alert">
+                <strong>Đăng ký chưa thành công</strong>
+                <span>{{ error }}</span>
+            </div>
+        {% endif %}
+
+        <div id="clientError" class="signup-message error-message"
+             role="alert" hidden>
+            <strong>Vui lòng kiểm tra lại</strong>
+            <span id="clientErrorText"></span>
+        </div>
+
+        <label for="username">
+            Tên đăng nhập
+            <input type="text" id="username" name="username"
+                   autocomplete="username"
+                   minlength="4" maxlength="30"
+                   pattern="[A-Za-z0-9_]+"
+                   placeholder="Nhập tên đăng nhập"
+                   value="{{ request.form.get('username', '') }}"
+                   required>
+            <small class="field-hint">
+                Từ 4–30 ký tự, chỉ gồm chữ không dấu, số và dấu gạch dưới (_).
+            </small>
+        </label>
+
+        <label for="full_name">
+            Họ và tên
+            <input type="text" id="full_name" name="full_name"
+                   autocomplete="name"
+                   maxlength="100"
+                   placeholder="Ví dụ: Nguyễn Văn An"
+                   value="{{ request.form.get('full_name', '') }}"
+                   required>
+        </label>
+
+        <label for="email">
+            Email
+            <input type="email" id="email" name="email"
+                   autocomplete="email"
+                   maxlength="254"
+                   placeholder="example@email.com"
+                   value="{{ request.form.get('email', '') }}"
+                   required>
+        </label>
+
+        <label for="password">
+            Mật khẩu
+            <input type="password" id="password" name="password"
+                   autocomplete="new-password"
+                   minlength="8" maxlength="128"
+                   placeholder="Tạo mật khẩu"
+                   required>
+            <small class="field-hint">
+                Ít nhất 8 ký tự, có chữ hoa, chữ thường, chữ số
+                và ký tự đặc biệt; không chứa khoảng trắng.
+            </small>
+        </label>
+
+        <label for="confirm_password">
+            Xác nhận mật khẩu
+            <input type="password" id="confirm_password"
+                   name="confirm_password"
+                   autocomplete="new-password"
+                   minlength="8" maxlength="128"
+                   placeholder="Nhập lại mật khẩu"
+                   required>
+            <small id="passwordMessage" class="field-message" aria-live="polite"></small>
+        </label>
+
+        <button class="btn wide" type="submit">Tạo tài khoản</button>
+
+        <p class="auth-bottom">
+            Đã có tài khoản?
+            <a href="{{ url_for('main.login') }}">Đăng nhập</a>
+        </p>
+    </form>
 </div>
+
+<style>
+.signup-compact {
+    padding: 22px 26px;
+    box-sizing: border-box;
+}
+
+.signup-compact h2 {
+    margin-top: 0;
+    margin-bottom: 14px;
+    font-size: 23px;
+}
+
+.signup-compact label {
+    display: block;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.signup-compact input {
+    display: block;
+    width: 100%;
+    height: 38px;
+    margin-top: 5px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    font-size: 13px;
+}
+
+.signup-compact input.input-error {
+    border-color: #dc3545 !important;
+}
+
+.signup-compact input.input-success {
+    border-color: #198754 !important;
+}
+
+.signup-compact .field-hint {
+    display: block;
+    margin-top: 5px;
+    color: #777;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.signup-compact .field-message {
+    display: block;
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.signup-message {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border: 1px solid;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.signup-message[hidden] {
+    display: none;
+}
+
+.error-message {
+    color: #b42318;
+    background: #fff1f0;
+    border-color: #f3b7b3;
+}
+
+.signup-compact button[type="submit"] {
+    display: flex;
+    width: 100%;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    padding: 9px 12px;
+    box-sizing: border-box;
+    font-size: 13px;
+}
+
+.signup-compact .auth-bottom {
+    margin-top: 10px;
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+    .signup-compact {
+        padding: 20px 16px;
+    }
+
+    .signup-compact label {
+        margin-bottom: 9px;
+    }
+}
+</style>
+
+<script>
+(function () {
+    const form = document.getElementById('signupForm');
+    const username = document.getElementById('username');
+    const fullName = document.getElementById('full_name');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const clientError = document.getElementById('clientError');
+    const clientErrorText = document.getElementById('clientErrorText');
+    const passwordMessage = document.getElementById('passwordMessage');
+
+    function showError(message, field) {
+        clientErrorText.textContent = message;
+        clientError.hidden = false;
+
+        document.querySelectorAll('.signup-compact input').forEach(function (input) {
+            input.classList.remove('input-error');
+        });
+
+        if (field) {
+            field.classList.add('input-error');
+            field.focus();
+        } else {
+            clientError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function clearError() {
+        clientError.hidden = true;
+        clientErrorText.textContent = '';
+    }
+
+    function checkPasswordMatch() {
+        if (!confirmPassword.value) {
+            passwordMessage.textContent = '';
+            passwordMessage.style.color = '';
+            confirmPassword.classList.remove('input-error', 'input-success');
+            return true;
+        }
+
+        if (confirmPassword.value !== password.value) {
+            passwordMessage.textContent = 'Mật khẩu xác nhận không khớp.';
+            passwordMessage.style.color = '#b42318';
+            confirmPassword.classList.add('input-error');
+            confirmPassword.classList.remove('input-success');
+            return false;
+        }
+
+        passwordMessage.textContent = 'Mật khẩu xác nhận khớp.';
+        passwordMessage.style.color = '#198754';
+        confirmPassword.classList.remove('input-error');
+        confirmPassword.classList.add('input-success');
+        return true;
+    }
+
+    [username, fullName, email, password, confirmPassword].forEach(function (field) {
+        field.addEventListener('input', function () {
+            field.classList.remove('input-error');
+            clearError();
+        });
+    });
+
+    password.addEventListener('input', checkPasswordMatch);
+    confirmPassword.addEventListener('input', checkPasswordMatch);
+
+    form.addEventListener('submit', function (event) {
+        clearError();
+
+        username.value = username.value.trim();
+        fullName.value = fullName.value.trim();
+        email.value = email.value.trim();
+
+        if (!username.value) {
+            event.preventDefault();
+            showError('Vui lòng nhập tên đăng nhập.', username);
+            return;
+        }
+
+        if (!/^[A-Za-z0-9_]{4,30}$/.test(username.value)) {
+            event.preventDefault();
+            showError(
+                'Tên đăng nhập phải có 4–30 ký tự, chỉ gồm chữ không dấu, số và dấu gạch dưới (_).',
+                username
+            );
+            return;
+        }
+
+        if (!fullName.value) {
+            event.preventDefault();
+            showError('Vui lòng nhập họ và tên của bạn.', fullName);
+            return;
+        }
+
+        if (!email.value) {
+            event.preventDefault();
+            showError('Vui lòng nhập địa chỉ email.', email);
+            return;
+        }
+
+        if (!email.validity.valid) {
+            event.preventDefault();
+            showError('Email chưa đúng định dạng. Ví dụ: example@email.com.', email);
+            return;
+        }
+
+        if (/\s/.test(password.value)) {
+            event.preventDefault();
+            showError('Mật khẩu không được chứa khoảng trắng.', password);
+            return;
+        }
+
+        if (
+            password.value.length < 8 ||
+            !/[A-Z]/.test(password.value) ||
+            !/[a-z]/.test(password.value) ||
+            !/[0-9]/.test(password.value) ||
+            !/[^A-Za-z0-9\s]/.test(password.value)
+        ) {
+            event.preventDefault();
+            showError(
+                'Mật khẩu chưa đủ mạnh. Hãy dùng ít nhất 8 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.',
+                password
+            );
+            return;
+        }
+
+        if (!checkPasswordMatch()) {
+            event.preventDefault();
+            showError('Mật khẩu xác nhận không khớp. Vui lòng nhập lại.', confirmPassword);
+            return;
+        }
+    });
+})();
+</script>
 {% endblock %}

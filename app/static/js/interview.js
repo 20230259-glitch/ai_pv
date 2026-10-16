@@ -636,9 +636,18 @@
         }
     });
 
-    nextBtn.addEventListener('click', () => {
+    
+    nextBtn.addEventListener('click', async () => {
+        console.log('Đã nhấn nút nextBtn', {
+            questionIndex,
+            totalQuestions,
+            analyzed: analyzedQuestions.has(questionIndex)
+        });
+
         // Không chuyển câu nếu chưa phân tích thành công.
         if (!analyzedQuestions.has(questionIndex)) {
+            console.log('Câu hiện tại chưa được phân tích thành công');
+
             feedback.textContent =
                 'Hãy phân tích câu trả lời trước khi chuyển câu hỏi.';
 
@@ -646,19 +655,47 @@
             return;
         }
 
-        questionIndex++;
+        // Nếu đã đến câu cuối, xác nhận hoàn thành ở backend trước.
+        if (questionIndex + 1 >= totalQuestions) {
+            console.log('Đã nhấn Xem báo cáo - đang gọi API');
 
-        if (questionIndex >= totalQuestions) {
-            window.location.href = '/report';
+            nextBtn.disabled = true;
+            nextBtn.textContent = 'Đang hoàn thành...';
+
+            try {
+                const response = await fetch('/api/complete-interview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.error || 'Không thể hoàn thành phiên phỏng vấn.'
+                    );
+                }
+
+                window.location.href = '/report';
+            } catch (error) {
+                alert(error.message);
+                nextBtn.disabled = false;
+                nextBtn.textContent = 'Xem báo cáo';
+            }
+
             return;
         }
+
+        // Chuyển sang câu hỏi tiếp theo.
+        questionIndex++;
 
         qIndex.textContent = String(
             questionIndex + 1
         ).padStart(2, '0');
 
-        questionEl.textContent =
-            job.questions[questionIndex];
+        questionEl.textContent = job.questions[questionIndex];
 
         transcript.value = '';
         finalText = '';
@@ -671,6 +708,11 @@
         speechState.textContent = 'Chưa ghi âm';
 
         nextBtn.disabled = false;
+
+        nextBtn.textContent =
+            questionIndex + 1 >= totalQuestions
+                ? 'Xem báo cáo'
+                : 'Câu hỏi tiếp theo';
 
         updateProgress();
 
@@ -690,4 +732,4 @@
             : 'Câu hỏi tiếp theo';
 
     updateProgress();
-})();
+    })(); 

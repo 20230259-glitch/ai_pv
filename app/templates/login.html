@@ -1,1 +1,77 @@
-{% extends 'base.html' %}{% block content %}<div class="auth-page container"><div class="auth-intro"><span class="eyebrow">INTERVIEWLAB</span><h1>Chào mừng trở lại.</h1><p>Tiếp tục luyện tập, xem lại skill gap và theo dõi tiến bộ của bạn.</p><div class="auth-note"><b>AI should feel invisible.</b><span>Công nghệ hỗ trợ phía sau để trải nghiệm phỏng vấn vẫn đơn giản và tự nhiên.</span></div></div><form class="auth-card" method="post"><h2>Đăng nhập</h2>{% if error %}<div class="alert">{{ error }}</div>{% endif %}<label>Tên đăng nhập<input name="username" autocomplete="username" required></label><label>Mật khẩu<input type="password" name="password" autocomplete="current-password" required></label><button class="btn wide" type="submit">Đăng nhập</button><div class="auth-divider">hoặc</div><button class="social-btn" type="button" disabled>Tiếp tục với Google</button><p class="auth-bottom">Chưa có tài khoản? <a href="{{ url_for('main.signup') }}">Đăng ký</a></p><div class="demo-box"><span>Demo</span><small>guest / guest123 · admin / admin123</small></div></form></div>{% endblock %}
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="auth-page container">
+
+    <!-- GIỚI THIỆU -->
+    <div class="auth-intro">
+        <span class="eyebrow">INTERVIEWLAB</span>
+
+        <h1>Chào mừng trở lại.</h1>
+
+        <p>
+            Tiếp tục luyện tập, xem lại kỹ năng còn thiếu
+            và theo dõi tiến bộ của bạn.
+        </p>
+
+        <div class="auth-note">
+            <b>AI should feel invisible.</b>
+            <span>
+                Công nghệ hỗ trợ phía sau để trải nghiệm
+                phỏng vấn vẫn đơn giản và tự nhiên.
+            </span>
+        </div>
+    </div>
+
+    <!-- FORM ĐĂNG NHẬP -->
+    <form class="auth-card" method="post">
+        <h2>Đăng nhập</h2>
+
+        {% if error %}
+            <div class="alert" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <label>
+            Tên đăng nhập
+            <input
+                type="text"
+                name="username"
+                autocomplete="username"
+                placeholder="Nhập tên đăng nhập"
+                required
+            >
+        </label>
+
+        <label>
+            Mật khẩu
+            <input
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                placeholder="Nhập mật khẩu"
+                required
+            >
+        </label>
+
+        <button class="btn wide" type="submit">
+            Đăng nhập
+        </button>
+
+        <div class="auth-divider">hoặc</div>
+
+        <button class="social-btn" type="button" disabled>
+            Tiếp tục với Google
+        </button>
+
+        <p class="auth-bottom">
+            Chưa có tài khoản?
+            <a href="{{ url_for('main.signup') }}">Đăng ký</a>
+        </p>
+    </form>
+
+</div>
+
+{% endblock %}

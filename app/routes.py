@@ -4,6 +4,7 @@ import re
 import uuid
 from contextlib import contextmanager
 from functools import wraps
+from flask import jsonify
 
 from flask import (
     Blueprint,
@@ -2553,12 +2554,189 @@ def dashboard():
 # 23. PROFILE
 # ============================================================
 
-@bp.route(
-    "/profile",
-    methods=["GET", "POST"],
-)
+@bp.route("/profile", methods=["GET", "POST"])
 @login_required("guest")
 def profile():
+    user_id = session["user_id"]
+
+    # 1. Lấy thông tin tài khoản
+    with db() as conn:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT id, username
+            FROM users
+            WHERE id = %s
+            """,
+            (user_id,),
+        )
+        user = cur.fetchone()
+
+        if not user:
+            return redirect(url_for("main.dashboard"))
+
+        # 2. Lấy hồ sơ ứng viên
+        cur.execute(
+            """
+            SELECT id, user_id, full_name, email
+            FROM candidates
+            WHERE user_id = %s
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (user_id,),
+        )
+        candidate = cur.fetchone()
+
+        # 3. Tạo hồ sơ nếu người dùng chưa có
+        if not candidate:
+            cur.execute(
+                """
+                INSERT INTO candidates (user_id, full_name)
+                VALUES (%s, %s)
+                RETURNING id, user_id, full_name, email
+                """,
+                (user_id, user["username"]),
+            )
+            candidate = cur.fetchone()
+
+        candidate_id = candidate["id"]
+
+        # 4. Xử lý khi người dùng lưu hồ sơ
+        if request.method == "POST":
+            full_name = request.form.get("full_name", "").strip()
+            email = request.form.get("email", "").strip()
+            cv = request.files.get("cv")
+
+            # Cập nhật thông tin cá nhân
+            cur.execute(
+                """
+                UPDATE candidates
+                SET full_name = %s,
+                    email = %s
+                WHERE id = %s
+                """,
+                (
+                    full_name or None,
+                    email or None,
+                    candidate_id,
+                ),
+            )
+
+            # 5. Nếu có CV mới thì lưu và trích xuất nội dung
+            if cv and cv.filename:
+                original_name = cv.filename
+                extension = original_name.rsplit(".", 1)[-1].lower()
+
+                if extension not in ("pdf", "docx"):
+                    return render_template(
+                        "profile.html",
+                        username=user["username"],
+                        candidate=candidate,
+                        cv_doc=None,
+                        skills=[],
+                        error="Chỉ chấp nhận file CV định dạng PDF hoặc DOCX.",
+                    )
+
+                safe_name = re.sub(
+                    r"[^\w.\- ]",
+                    "_",
+                    original_name,
+                    flags=re.UNICODE,
+                )
+
+                upload_folder = current_app.config["UPLOAD_FOLDER"]
+                upload_folder.mkdir(parents=True, exist_ok=True)
+
+                # Tên file riêng để tránh ghi đè CV của người khác
+                import uuid
+
+                stored_name = f"{uuid.uuid4().hex}_{safe_name}"
+                file_path = upload_folder / stored_name
+
+                cv.save(file_path)
+
+                try:
+                    raw_text = extract_document(file_path)
+                    cleaned_text = clean_text(raw_text or "")
+
+                    cur.execute(
+                        """
+                        INSERT INTO documents (
+                            candidate_id,
+                            document_type,
+                            file_name,
+                            raw_text,
+                            cleaned_text
+                        )
+                        VALUES (%s, 'CV', %s, %s, %s)
+                        """,
+                        (
+                            candidate_id,
+                            original_name,
+                            raw_text or "",
+                            cleaned_text or "",
+                        ),
+                    )
+
+                except Exception:
+                    current_app.logger.exception(
+                        "Không thể đọc nội dung CV: %s",
+                        original_name,
+                    )
+
+                    return render_template(
+                        "profile.html",
+                        username=user["username"],
+                        candidate=candidate,
+                        cv_doc=None,
+                        skills=[],
+                        error=(
+                            "Không đọc được nội dung CV. "
+                            "Hãy kiểm tra file PDF/DOCX rồi thử lại."
+                        ),
+                    )
+
+            return redirect(url_for("main.profile"))
+
+        # 6. Lấy CV gần nhất đã lưu
+        cur.execute(
+            """
+            SELECT id, file_name, cleaned_text, created_at
+            FROM documents
+            WHERE candidate_id = %s
+              AND document_type = 'CV'
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (candidate_id,),
+        )
+        cv_doc = cur.fetchone()
+
+    # 7. Trích xuất danh sách kỹ năng từ CV
+    cv_text = ""
+    if cv_doc:
+        cv_text = cv_doc["cleaned_text"] or ""
+
+    skills = standardize_skills(cv_text)
+
+    # 8. Hiển thị trang hồ sơ cá nhân
+    return render_template(
+        "profile.html",
+        candidate=candidate,
+        cv_doc=cv_doc,
+        skills=skills,
+        username=user["username"],
+    )
+
+# ============================================================
+# 23. INTERVIEW_SETUP
+# ============================================================
+
+@bp.route("/interview/setup", methods=["GET", "POST"])
+@login_required("guest")
+def interview_setup():
 
     # ========================================================
     # POST
@@ -2666,7 +2844,7 @@ def profile():
         if not jd:
 
             return render_template(
-                "profile.html",
+                "interview_setup.html",
                 error="Vui lòng nhập Job Description.",
                 roles=ROLES,
                 profile=None,
@@ -2841,7 +3019,7 @@ def profile():
         # Không tạo phiên phỏng vấn nếu không có câu hỏi.
         if not questions:
             return render_template(
-                "profile.html",
+                "interview_setup.html",
                 error="Không tạo được câu hỏi phỏng vấn. Vui lòng thử lại.",
                 roles=ROLES,
                 profile=None,
@@ -2971,20 +3149,7 @@ def profile():
                 ),
             )
 
-            row = cur.fetchone()
-
-            if row is None:
-                raise RuntimeError(
-                    "Không lấy được ID tài liệu JD sau khi INSERT."
-                )
-
-            jd_document_id = row["id"]
-
-            print(
-                "DEBUG JD DOCUMENT ID:",
-                jd_document_id,
-                flush=True,
-            )
+            jd_document_id = cur.fetchone()["id"]
             # ------------------------------------------------
             # Interview Session
             # ------------------------------------------------
@@ -3014,34 +3179,23 @@ def profile():
                 ),
             )
 
-            row = cur.fetchone()
-            interview_session_id = row["id"]
+            interview_session_id = cur.fetchone()["id"]
+
             print(
-                "DEBUG NEW INTERVIEW SESSION:",
-                interview_session_id,
+                f"[DEBUG] Đã tạo phiên mới: "
+                f"id={interview_session_id}, "
+                f"candidate_id={candidate_id}, "
+                f"user_id={session.get('user_id')}",
                 flush=True,
             )
-
-            # Lưu ID phiên mới vào Flask session
+            print(
+                f"[DEBUG] PROFILE tạo phiên mới: ID={interview_session_id}",
+                flush=True,
+            )
             session["interview_session_id"] = interview_session_id
-
-            print(
-                "DEBUG PROFILE - NEW SESSION ID:",
-                interview_session_id,
-                flush=True,
-            )
-
-            print(
-                "DEBUG PROFILE - SESSION VALUE:",
-                session.get("interview_session_id"),
-                flush=True,
-            )
-
-            print(
-                "DEBUG CREATED SESSION:",
-                interview_session_id,
-                flush=True,
-            )  
+            session["interview_run_id"] = uuid.uuid4().hex
+            session.modified = True
+            
             # ------------------------------------------------
             # Questions
             # ------------------------------------------------
@@ -3125,7 +3279,7 @@ def profile():
         p = cur.fetchone()
 
     return render_template(
-        "profile.html",
+        "interview_setup.html",
         profile=p,
         roles=ROLES,
     )
@@ -4355,7 +4509,7 @@ def progress():
         cur.execute(
             """
             WITH latest_answers AS (
-                SELECT DISTINCT ON (a.question_id)
+                SELECT DISTINCT ON (a.session_id, a.question_id)
                     a.id AS answer_id,
                     a.session_id,
                     a.question_id
@@ -4366,10 +4520,10 @@ def progress():
                     ON c.id = s.candidate_id
                 WHERE c.user_id = %s
                 ORDER BY
+                    a.session_id,
                     a.question_id,
                     a.id DESC
             )
-
             SELECT
                 la.session_id,
                 criteria.criterion,
@@ -4553,3 +4707,97 @@ def admin():
         users=users,
         rows=rows,
     )
+
+
+@bp.route("/api/complete-interview", methods=["POST"])
+@login_required("guest")
+def complete_interview():
+    """Chỉ hoàn thành phiên khi đã trả lời đủ câu hỏi."""
+
+    user_id = session.get("user_id")
+    interview_session_id = session.get("interview_session_id")
+
+    if not user_id or not interview_session_id:
+        return jsonify({
+            "error": "Không tìm thấy phiên phỏng vấn hiện tại."
+        }), 400
+
+    with db() as conn:
+        cur = conn.cursor()
+
+        # Xác minh phiên thuộc người dùng hiện tại.
+        cur.execute(
+            """
+            SELECT s.id
+            FROM interview_sessions s
+            JOIN candidates c ON c.id = s.candidate_id
+            WHERE s.id = %s
+              AND c.user_id = %s
+            LIMIT 1
+            """,
+            (interview_session_id, user_id),
+        )
+
+        interview = cur.fetchone()
+
+        if not interview:
+            return jsonify({
+                "error": "Phiên phỏng vấn không tồn tại hoặc không thuộc tài khoản này."
+            }), 404
+
+        # Đếm tổng câu hỏi và số câu đã có câu trả lời.
+        cur.execute(
+            """
+            SELECT
+                (
+                    SELECT COUNT(*)
+                    FROM questions
+                    WHERE session_id = %s
+                ) AS total_questions,
+                (
+                    SELECT COUNT(DISTINCT a.question_id)
+                    FROM answers a
+                    JOIN questions q ON q.id = a.question_id
+                    WHERE a.session_id = %s
+                      AND q.session_id = %s
+                ) AS answered_questions
+            """,
+            (
+                interview_session_id,
+                interview_session_id,
+                interview_session_id,
+            ),
+        )
+
+        counts = cur.fetchone()
+
+        total = int(counts["total_questions"] or 0)
+        answered = int(counts["answered_questions"] or 0)
+
+        if total == 0 or answered < total:
+            return jsonify({
+                "error": (
+                    f"Bạn mới trả lời {answered}/{total} câu hỏi. "
+                    "Hãy hoàn thành tất cả câu hỏi trước khi xem báo cáo."
+                ),
+                "total_questions": total,
+                "answered_questions": answered,
+            }), 400
+
+        # Không ghi đè thời điểm kết thúc nếu đã hoàn thành trước đó.
+        cur.execute(
+            """
+            UPDATE interview_sessions
+            SET completed_at = COALESCE(
+                completed_at,
+                CURRENT_TIMESTAMP
+            )
+            WHERE id = %s
+            """,
+            (interview_session_id,),
+        )
+
+    return jsonify({
+        "success": True,
+        "message": "Phiên phỏng vấn đã hoàn thành.",
+    }), 200

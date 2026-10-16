@@ -3,8 +3,21 @@ __pycache__/
 .venv/
 venv/
 env/
-.idea/
-.vscode/
 .env
-*.db
+*.log
 .pytest_cache/
+.mypy_cache/
+.vscode/
+.idea/
+.DS_Store
+
+# Model cache
+.cache/
+huggingface_cache/
+
+# Uploaded files and generated data
+uploads/
+instance/
+
+# Secrets
+config.local.py
